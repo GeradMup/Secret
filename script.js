@@ -2,7 +2,10 @@
 const openButton = document.querySelector("#openMessage");
 const againButton = document.querySelector("#again");
 const colors = ["#ff5c9a", "#ffb3cd", "#ffd98a", "#fff7fb"];
+const INTRO_DELAY_MS = 10000;
 let heartTimer;
+let introTimer;
+let burstTimers = [];
 
 function makeHeart() {
   const heart = document.createElement("div");
@@ -16,22 +19,54 @@ function makeHeart() {
   window.setTimeout(() => heart.remove(), 7600);
 }
 
+function clearHeartEffects() {
+  clearInterval(heartTimer);
+  heartTimer = undefined;
+  burstTimers.forEach((timerId) => clearTimeout(timerId));
+  burstTimers = [];
+  document.querySelectorAll(".heart").forEach((heart) => heart.remove());
+}
+
 function burst(amount = 36) {
   for (let i = 0; i < amount; i += 1) {
-    window.setTimeout(makeHeart, i * 38);
+    const timerId = window.setTimeout(() => {
+      makeHeart();
+      burstTimers = burstTimers.filter((id) => id !== timerId);
+    }, i * 38);
+    burstTimers.push(timerId);
   }
 }
 
-function showMessage() {
-  openButton.style.display = "none";
+function replayMessageAnimation() {
   message.classList.remove("show");
   void message.offsetWidth;
   message.classList.add("show");
+}
+
+function showMessage() {
+  clearTimeout(introTimer);
+  clearHeartEffects();
+  openButton.style.display = "none";
+  replayMessageAnimation();
   burst(52);
-  clearInterval(heartTimer);
   heartTimer = setInterval(makeHeart, 240);
 }
 
+function startIntroDelay() {
+  clearTimeout(introTimer);
+  introTimer = window.setTimeout(showMessage, INTRO_DELAY_MS);
+}
+
+function resetToStart() {
+  clearTimeout(introTimer);
+  clearHeartEffects();
+  message.classList.remove("show");
+  openButton.style.display = "";
+  startIntroDelay();
+}
+
 openButton.addEventListener("click", showMessage);
-againButton.addEventListener("click", () => burst(60));
-window.addEventListener("load", () => window.setTimeout(showMessage, 900));
+againButton.addEventListener("click", resetToStart);
+startIntroDelay();
+
+
