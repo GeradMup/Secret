@@ -65,8 +65,9 @@ function resetToStart() {
   startIntroDelay();
 }
 
-openButton.addEventListener("click", showMessage);
+openButton.addEventListener("click", startIntroDelay);
 againButton.addEventListener("click", resetToStart);
 startIntroDelay();
+
 
 
